@@ -4,7 +4,7 @@ body {
   margin: 0;
   font-family: IBMPlexSans, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
     Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-  background: url("/static/background.png");
+  background: url("/static/background3.jpeg");
   background-position: 50%;
   background-repeat: no-repeat;
   background-size: cover;
@@ -82,8 +82,11 @@ button:focus {
 }
 
 :root {
-  --text-purple: rgba(67, 56, 202, 1);
-  --text-purple-dark: rgba(79, 70, 229, 1);
+  --text-purple: rgb(231, 144, 221);
+  --text-title-left: rgb(134, 188, 242);
+  --text-purple-dark: rgba(79, 70, 229, 0.8);
   --text-black: rgba(17, 24, 39, 1);
   --text-white-100: rgba(229, 231, 235, 1);
+  --text-subTitle:  rgba(41, 42, 44, 0.6);
+  --text-subject: rgb(134, 188, 242);
 }

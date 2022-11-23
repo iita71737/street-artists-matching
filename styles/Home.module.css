@@ -15,6 +15,7 @@
 
 .heroImage {
   position: absolute;
+  right: 0px;
   top: 0px;
   z-index: 1;
 }
@@ -35,7 +36,7 @@
   line-height: 2.5rem;
   padding-bottom: 2rem;
   margin-top: 2rem;
-  color: var(--text-white-100);
+  color: var(--text-subject);
 }
 
 .sectionWrapper {
@@ -69,7 +70,7 @@
 @media (min-width: 768px) {
   .container {
     padding-left: 2.5rem /* 40px */;
-    padding-right: 2.5rem /* 40px */;
+    padding-right: 2.5rem /* 40px */
   }
 
   .main {
@@ -77,7 +78,8 @@
   }
 
   .heroImage {
-    right: 20%;
+    top: 5rem;
+    /* right: 2rem; */
   }
 
   .cardLayout {
@@ -96,7 +98,7 @@
     padding-right: 2rem /* 32px */;
   }
   .heroImage {
-    right: 20%;
+    right: 10%;
   }
   .cardLayout {
     grid-template-columns: repeat(3, minmax(0, 1fr));
