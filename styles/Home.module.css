@@ -43,6 +43,15 @@
   margin-top: 5rem;
 }
 
+.paginationContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.6);;
+  border-radius: 25px 25px 25px 25px;
+  margin-top: 2rem;
+}
+
 /** Breakpoints:
   sm: min-width: 640px;
   md: min-width: 768px;

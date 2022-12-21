@@ -10,8 +10,13 @@ import { fetchCoffeeStores } from "../lib/coffee-stores";
 import useTrackLocation from "../hooks/use-track-location";
 import { ACTION_TYPES, StoreContext } from "../store/store-context";
 
-import artistsJSON from '../data/artist.json'
-import Airtable from 'airtable';
+import artistsJSON from '../data/taipei_artists.json'
+import {
+  fetchArtist,
+  fetchArtistMore
+} from "../lib/airtable";
+
+import { Typography, Box, Pagination } from "@mui/material";
 
 export async function getStaticProps(context) {
   if (
@@ -28,36 +33,7 @@ export async function getStaticProps(context) {
     };
   }
   const coffeeStores = await fetchCoffeeStores();
- 
-  const airtable = new Airtable({
-    apiKey: process.env.NEXT_PUBLIC_AIRTABLE_API_KEY ,
-  });
-
-  const records = await airtable
-    .base(process.env.NEXT_PUBLIC_AIRTABLE_BASE_KEY)('street-artist-list')
-    .select({
-      // maxRecords: 3,
-      // fields: ['certificateNo', 'name', 'id', 'category', 'subcategory'],
-    })
-    .all();
-
-  const artists = records.map((record) => {
-    return {
-      id: record.get('id'),
-      certificateNo : record.get('certificateNo'),
-      name: record.get('name'),
-      category: record.get('category') ? record.get('category') : null,
-      subcategory: record.get('subcategory') ? record.get('subcategory') : null,
-      subcategoryDes: record.get('subcategoryDes') ?  record.get('subcategoryDes') : null,
-      introUrl: record.get('introUrl') ? record.get('introUrl') : null,
-      stageName: record.get('stageName') ? record.get('stageName') : null,
-      set: record.get('sex') ? record.get('sex') : null,
-      phone: record.get('phone') ? record.get('phone') : null,
-      email: record.get('email') ? record.get('email') : null
-    };
-  });
-
-  console.log(artists,'-artists')
+  const artists = await fetchArtist()
 
   return {
     props: {
@@ -68,14 +44,20 @@ export async function getStaticProps(context) {
 }
 
 export default function Home(props) {
+
+  const [pageApi, setPageApi] = useState(1);
+  const [moreArtist, setMoreArtist] = useState();
+
+  console.log(moreArtist,'-moreArtist-')
   const { handleTrackLocation, locationErrorMsg, isFindingLocation } =
     useTrackLocation();
-
   const [coffeeStoresError, setCoffeeStoresError] = useState(null);
-
   const { dispatch, state } = useContext(StoreContext);
-
   const { coffeeStores, latLong } = state;
+
+  const handleOnBannerBtnClick = () => {
+    handleTrackLocation();
+  };
 
   useEffect(() => {
     async function setCoffeeStoresByLocation() {
@@ -105,9 +87,14 @@ export default function Home(props) {
     setCoffeeStoresByLocation();
   }, [dispatch, latLong]);
 
-  const handleOnBannerBtnClick = () => {
-    handleTrackLocation();
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      const _fetchData = await fetchArtistMore(pageApi)
+      setMoreArtist(_fetchData)
+    };
+    fetchData()
+      .catch(console.error);;
+  }, [pageApi]);
 
 
   return (
@@ -137,7 +124,50 @@ export default function Home(props) {
           />
         </div>
 
-        {coffeeStores.length > 0 && (
+      {props.artists && props.artists.length > 0 && (
+        <>
+        <div className={styles.sectionWrapper}>
+        <h2 className={styles.heading2}>Show all artists</h2>
+        <div className={styles.cardLayout}>
+        {pageApi === 1 && props.artists.map(artist => {
+          return (
+            <Card
+            key={artist.id}
+            name={artist.name}
+            imgUrl={
+              artist.imgUrl ||
+              "https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"
+            }
+            href={`/coffee-store/${artist.id}`}
+            className={styles.card}
+            />
+            )
+        }) 
+        }
+        {moreArtist && moreArtist.length>0 && moreArtist.map(artist => {
+          return (
+            <Card
+            key={artist.id}
+            name={artist.name}
+            imgUrl={
+              artist.imgUrl ||
+              "https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"
+            }
+            href={`/coffee-store/${artist.id}`}
+            className={styles.card}
+            />
+            )
+        }) 
+        }
+          </div>
+      </div>
+        <div className={styles.paginationContainer} >
+          <Pagination count={10} color="secondary" size="large" onChange={(e, value) => setPageApi(value)}/>
+        </div>
+      </>
+      )}
+
+      {coffeeStores.length > 0 && (
           <div className={styles.sectionWrapper}>
             <h2 className={styles.heading2}>Show near me</h2>
             <div className={styles.cardLayout}>
@@ -159,30 +189,7 @@ export default function Home(props) {
           </div>
         )}
 
-      {props.artists && props.artists.length > 0 && (
-        <div className={styles.sectionWrapper}>
-        <h2 className={styles.heading2}>Show all artists</h2>
-        <div className={styles.cardLayout}>
-        { props.artists.map(artist => {
-          return (
-            <Card
-            key={artist.id}
-            name={artist.name}
-            imgUrl={
-              artist.imgUrl ||
-              "https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"
-            }
-            href={`/coffee-store/${artist.id}`}
-            className={styles.card}
-            />
-            )
-        }) 
-        }
-          </div>
-      </div>
-      )}
-
-        <div className={styles.sectionWrapper}>
+        {/* <div className={styles.sectionWrapper}>
           {props.coffeeStores.length > 0 && (
             <>
               <h2 className={styles.heading2}>Toronto stores</h2>
@@ -204,7 +211,7 @@ export default function Home(props) {
               </div>
             </>
           )}
-        </div>
+        </div> */}
       </main>
     </div>
   );
