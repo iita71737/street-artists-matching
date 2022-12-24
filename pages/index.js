@@ -11,9 +11,12 @@ import useTrackLocation from "../hooks/use-track-location";
 import { ACTION_TYPES, StoreContext } from "../store/store-context";
 
 import artistsJSON from '../data/taipei_artists.json'
+
 import {
-  fetchArtist,
-  fetchArtistMore
+  fetchArtistByAirtable,
+  fetchArtistMore,
+  fetchArtistByLaravel,
+  fetchArtistOtherPageByLaravel
 } from "../lib/airtable";
 
 import { Typography, Box, Pagination } from "@mui/material";
@@ -33,7 +36,7 @@ export async function getStaticProps(context) {
     };
   }
   const coffeeStores = await fetchCoffeeStores();
-  const artists = await fetchArtist()
+  const artists = await fetchArtistByLaravel()
 
   return {
     props: {
@@ -45,10 +48,9 @@ export async function getStaticProps(context) {
 
 export default function Home(props) {
 
-  const [pageApi, setPageApi] = useState(1);
+  const [params, setParams] = useState();
   const [moreArtist, setMoreArtist] = useState();
 
-  console.log(moreArtist,'-moreArtist-')
   const { handleTrackLocation, locationErrorMsg, isFindingLocation } =
     useTrackLocation();
   const [coffeeStoresError, setCoffeeStoresError] = useState(null);
@@ -89,12 +91,12 @@ export default function Home(props) {
 
   useEffect(() => {
     const fetchData = async () => {
-      const _fetchData = await fetchArtistMore(pageApi)
+      const _fetchData = await fetchArtistOtherPageByLaravel({params:params})
       setMoreArtist(_fetchData)
     };
     fetchData()
       .catch(console.error);;
-  }, [pageApi]);
+  }, [params]);
 
 
   return (
@@ -129,7 +131,7 @@ export default function Home(props) {
         <div className={styles.sectionWrapper}>
         <h2 className={styles.heading2}>Show all artists</h2>
         <div className={styles.cardLayout}>
-        {pageApi === 1 && props.artists.map(artist => {
+        {params === undefined && props.artists.map(artist => {
           return (
             <Card
             key={artist.id}
@@ -144,7 +146,7 @@ export default function Home(props) {
             )
         }) 
         }
-        {moreArtist && moreArtist.length>0 && moreArtist.map(artist => {
+        {params && moreArtist && moreArtist.length>0 && moreArtist.map(artist => {
           return (
             <Card
             key={artist.id}
@@ -162,7 +164,7 @@ export default function Home(props) {
           </div>
       </div>
         <div className={styles.paginationContainer} >
-          <Pagination count={10} color="secondary" size="large" onChange={(e, value) => setPageApi(value)}/>
+          <Pagination count={37} color="secondary" size="large" onChange={(e, value) => setParams({page:value})}/>
         </div>
       </>
       )}
@@ -188,30 +190,6 @@ export default function Home(props) {
             </div>
           </div>
         )}
-
-        {/* <div className={styles.sectionWrapper}>
-          {props.coffeeStores.length > 0 && (
-            <>
-              <h2 className={styles.heading2}>Toronto stores</h2>
-              <div className={styles.cardLayout}>
-                {props.coffeeStores.map((coffeeStore) => {
-                  return (
-                    <Card
-                      key={coffeeStore.id}
-                      name={coffeeStore.name}
-                      imgUrl={
-                        coffeeStore.imgUrl ||
-                        "https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"
-                      }
-                      href={`/coffee-store/${coffeeStore.id}`}
-                      className={styles.card}
-                    />
-                  );
-                })}
-              </div>
-            </>
-          )}
-        </div> */}
       </main>
     </div>
   );

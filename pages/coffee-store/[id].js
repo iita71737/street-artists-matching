@@ -9,22 +9,18 @@ import useSWR from "swr";
 import cls from "classnames";
 
 import styles from "../../styles/coffee-store.module.css";
-import { fetchCoffeeStores } from "../../lib/coffee-stores";
 
+import { fetchCoffeeStores, fetchArtistById } from "../../lib/coffee-stores";
 import { StoreContext } from "../../store/store-context";
-
 import { fetcher, isEmpty } from "../../utils";
 
 export async function getStaticProps(staticProps) {
   const params = staticProps.params;
+  const artist = await fetchArtistById(params.id);
 
-  const coffeeStores = await fetchCoffeeStores();
-  const findCoffeeStoreById = coffeeStores.find((coffeeStore) => {
-    return coffeeStore.id.toString() === params.id; //dynamic id
-  });
   return {
     props: {
-      coffeeStore: findCoffeeStoreById ? findCoffeeStoreById : {},
+      artist: artist ? artist : {}
     },
   };
 }
@@ -38,6 +34,7 @@ export async function getStaticPaths() {
       },
     };
   });
+  console.log(paths,'-paths-')
   return {
     paths,
     fallback: true,
@@ -46,70 +43,30 @@ export async function getStaticPaths() {
 
 const CoffeeStore = (initialProps) => {
   const router = useRouter();
-
   const id = router.query.id;
 
-  const [coffeeStore, setCoffeeStore] = useState(
-    initialProps.coffeeStore || {}
+  const [artist, setArtist] = useState(
+    initialProps.artist || {}
   );
 
-  const {
-    state: { coffeeStores },
-  } = useContext(StoreContext);
-
-  const handleCreateCoffeeStore = async (coffeeStore) => {
-    try {
-      const { id, name, voting, imgUrl, neighbourhood, address } = coffeeStore;
-      const response = await fetch("/api/createCoffeeStore", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id,
-          name,
-          voting: 0,
-          imgUrl,
-          neighbourhood: neighbourhood || "",
-          address: address || "",
-        }),
-      });
-
-      const dbCoffeeStore = await response.json();
-    } catch (err) {
-      console.error("Error creating coffee store", err);
-    }
-  };
-
-  useEffect(() => {
-    if (isEmpty(initialProps.coffeeStore)) {
-      if (coffeeStores.length > 0) {
-        const findCoffeeStoreById = coffeeStores.find((coffeeStore) => {
-          return coffeeStore.id.toString() === id; //dynamic id
-        });
-        setCoffeeStore(findCoffeeStoreById);
-        handleCreateCoffeeStore(findCoffeeStoreById);
-      }
-    } else {
-      // SSG
-      handleCreateCoffeeStore(initialProps.coffeeStore);
-    }
-  }, [id, initialProps.coffeeStore, coffeeStores]);
+  console.log(artist,'-artist-')
 
   const {
     name = "",
-    address = "",
-    neighbourhood = "",
+    category = "",
+    subcategory = "",
+    subcategoryDes = "",
+    introUrl = "",
     imgUrl = "",
-  } = coffeeStore;
+    email = "",
+  } = artist;
+  
+  // vote
   const [votingCount, setVotingCount] = useState(0);
-
-  const { data, error } = useSWR(`/api/getCoffeeStoreById?id=${id}`, fetcher);
-
+  const { data, error } = useSWR(`/api/taipei_artist/${id}`, fetcher);
   useEffect(() => {
     if (data && data.length > 0) {
-      setCoffeeStore(data[0]);
-      setVotingCount(data[0].voting);
+      setArtist(data);
     }
   }, [data]);
 
@@ -166,14 +123,14 @@ const CoffeeStore = (initialProps) => {
               "https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"
             }
             width={600}
-            height={360}
+            height={400}
             className={styles.storeImg}
             alt={name}
           />
         </div>
 
         <div className={cls("glass", styles.col2)}>
-          {address && (
+          {category && (
             <div className={styles.iconWrapper}>
               <Image
                 src="/static/icons/places.svg"
@@ -181,10 +138,10 @@ const CoffeeStore = (initialProps) => {
                 height="24"
                 alt="places icon"
               />
-              <p className={styles.text}>{address}</p>
+              <p className={styles.text}>{'表演類型'}{'：'}{category}</p>
             </div>
           )}
-          {neighbourhood && (
+          {subcategory && (
             <div className={styles.iconWrapper}>
               <Image
                 src="/static/icons/nearMe.svg"
@@ -192,22 +149,24 @@ const CoffeeStore = (initialProps) => {
                 height="24"
                 alt="near me icon"
               />
-              <p className={styles.text}>{neighbourhood}</p>
+              <p className={styles.text}>{'表演項目'}{'：'}{subcategory}</p>
             </div>
           )}
-          <div className={styles.iconWrapper}>
-            <Image
-              src="/static/icons/star.svg"
-              width="24"
-              height="24"
-              alt="star icon"
-            />
-            <p className={styles.text}>{votingCount}</p>
-          </div>
-
-          <button className={styles.upvoteButton} onClick={handleUpvoteButton}>
+          { subcategoryDes && (
+             <div className={styles.iconWrapper}>
+             <Image
+               src="/static/icons/star.svg"
+               width="24"
+               height="24"
+               alt="star icon"
+             />
+             <p className={styles.text}>{'表演項目簡述'}{'：'}{subcategoryDes}</p>
+           </div>
+          )
+          }
+          {/* <button className={styles.upvoteButton} onClick={handleUpvoteButton}>
             Up vote!
-          </button>
+          </button> */}
         </div>
       </div>
     </div>
