@@ -3,5 +3,5 @@ export const isEmpty = (obj) => {
 };
 
 export const fetcher = (url) => {
-  fetch(url).then((res) => res.json())
+  fetch(`http://localhost:8000${url}`).then((res) => res.json())
 };

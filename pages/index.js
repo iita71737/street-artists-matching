@@ -10,13 +10,13 @@ import { fetchCoffeeStores } from "../lib/coffee-stores";
 import useTrackLocation from "../hooks/use-track-location";
 import { ACTION_TYPES, StoreContext } from "../store/store-context";
 
-import artistsJSON from '../data/taipei_artists.json'
+import artistsJSON from "../data/taipei_artists.json";
 
 import {
   fetchArtistByAirtable,
   fetchArtistMore,
   fetchArtistByLaravel,
-  fetchArtistOtherPageByLaravel
+  fetchArtistOtherPageByLaravel,
 } from "../lib/airtable";
 
 import { Typography, Box, Pagination } from "@mui/material";
@@ -36,18 +36,17 @@ export async function getStaticProps(context) {
     };
   }
   const coffeeStores = await fetchCoffeeStores();
-  const artists = await fetchArtistByLaravel()
+  const artists = await fetchArtistByLaravel();
 
   return {
     props: {
       coffeeStores,
-      artists : artists || null
-    }
+      artists: artists || null,
+    },
   };
 }
 
 export default function Home(props) {
-
   const [params, setParams] = useState();
   const [moreArtist, setMoreArtist] = useState();
 
@@ -78,9 +77,7 @@ export default function Home(props) {
             },
           });
           setCoffeeStoresError("");
-
         } catch (error) {
-
           console.error({ error });
           setCoffeeStoresError(error.message);
         }
@@ -91,13 +88,13 @@ export default function Home(props) {
 
   useEffect(() => {
     const fetchData = async () => {
-      const _fetchData = await fetchArtistOtherPageByLaravel({params:params})
-      setMoreArtist(_fetchData)
+      const _fetchData = await fetchArtistOtherPageByLaravel({
+        params: params,
+      });
+      setMoreArtist(_fetchData);
     };
-    fetchData()
-      .catch(console.error);;
+    fetchData().catch(console.error);
   }, [params]);
-
 
   return (
     <div className={styles.container}>
@@ -126,50 +123,57 @@ export default function Home(props) {
           />
         </div>
 
-      {props.artists && props.artists.length > 0 && (
-        <>
-        <div className={styles.sectionWrapper}>
-        <h2 className={styles.heading2}>Show all artists</h2>
-        <div className={styles.cardLayout}>
-        {params === undefined && props.artists.map(artist => {
-          return (
-            <Card
-            key={artist.id}
-            name={artist.name}
-            imgUrl={
-              artist.imgUrl ||
-              "https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"
-            }
-            href={`/coffee-store/${artist.id}`}
-            className={styles.card}
-            />
-            )
-        }) 
-        }
-        {params && moreArtist && moreArtist.length>0 && moreArtist.map(artist => {
-          return (
-            <Card
-            key={artist.id}
-            name={artist.name}
-            imgUrl={
-              artist.imgUrl ||
-              "https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"
-            }
-            href={`/coffee-store/${artist.id}`}
-            className={styles.card}
-            />
-            )
-        }) 
-        }
-          </div>
-      </div>
-        <div className={styles.paginationContainer} >
-          <Pagination count={37} color="secondary" size="large" onChange={(e, value) => setParams({page:value})}/>
-        </div>
-      </>
-      )}
+        {props.artists && props.artists.length > 0 && (
+          <>
+            <div className={styles.sectionWrapper}>
+              <h2 className={styles.heading2}>Show all artists</h2>
+              <div className={styles.cardLayout}>
+                {params === undefined &&
+                  props.artists.map((artist) => {
+                    return (
+                      <Card
+                        key={artist.id}
+                        name={artist.name}
+                        imgUrl={
+                          artist.imgUrl ||
+                          "https://images.unsplash.com/photo-1471922694854-ff1b63b20054?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1172&q=80"
+                        }
+                        href={`/coffee-store/${artist.id}`}
+                        className={styles.card}
+                      />
+                    );
+                  })}
+                {params &&
+                  moreArtist &&
+                  moreArtist.length > 0 &&
+                  moreArtist.map((artist) => {
+                    return (
+                      <Card
+                        key={artist.id}
+                        name={artist.name}
+                        imgUrl={
+                          artist.imgUrl ||
+                          "https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"
+                        }
+                        href={`/coffee-store/${artist.id}`}
+                        className={styles.card}
+                      />
+                    );
+                  })}
+              </div>
+            </div>
+            <div className={styles.paginationContainer}>
+              <Pagination
+                count={37}
+                color="secondary"
+                size="large"
+                onChange={(e, value) => setParams({ page: value })}
+              />
+            </div>
+          </>
+        )}
 
-      {coffeeStores.length > 0 && (
+        {coffeeStores.length > 0 && (
           <div className={styles.sectionWrapper}>
             <h2 className={styles.heading2}>Show near me</h2>
             <div className={styles.cardLayout}>
